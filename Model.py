@@ -10,7 +10,7 @@ class Record:
         self.position =_position
         self.squad = _squad
         self.titles = _titles
-    def to_tuple(self) -> tuple:
+    def to_list(self) -> list:
         return self.fullName,self.rank , self.sport, self.position, self.squad, ", ".join(self.titles)
     
 class XmlRecordRepository():
@@ -58,20 +58,6 @@ class XmlRecordRepository():
 
     def add_record(self, record: Record):
         self.storage.append(record)
-        self.__save()
 
-    def remove_record(self, name: str):
-        self.storage = list(filter(lambda x: x.name != name, self.storage))
-        self.__save()
-
-class Model:
-    def __init__(self,path) -> None:
-        self.records = XmlRecordRepository(path)
-        self.records_for_table = []
-
-    def make_records_for_table(self):
-        for record in self.records.get_all():
-            self.records_for_table.append(record.to_tuple())
-    
-    def get_records_for_table(self):
-        return self.records_for_table
+    def remove_record(self, fullName: str):
+        self.storage = list(filter(lambda x: x.fullName != fullName, self.storage))

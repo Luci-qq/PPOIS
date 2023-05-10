@@ -1,9 +1,19 @@
-from Model import Model
-from View import MainApp
+from Model import XmlRecordRepository
 
-mod = Model("E:\\universityProgs\\Lab2\\data.xml")
-mod.make_records_for_table()
-_table_records = mod.get_records_for_table()
+class Controller:
+    def __init__(self,path):
+        self.model=XmlRecordRepository(path)
+    
+    def get_record_list(self):
+        record_list=[]
+        for record in self.model.get_all():
+            record_list.append(record.to_list())
+        return record_list    
 
-main = MainApp(_table_records)
-main.run()
+    def remove_elm(self,key:str):
+        self.model.remove_record(key)
+    
+    def save(self):
+        self.model.__save()
+    
+
