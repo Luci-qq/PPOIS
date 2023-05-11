@@ -34,15 +34,13 @@ class XmlRecordRepository():
                 json.loads(record["titles"].replace("'", '"'))
             ))
 
-    def __save(self):
+    def save_records(self):
         doc = minidom.Document()
-
         xml = doc.createElement("records")
         doc.appendChild(xml)
-
         for record in self.storage:
             entry = doc.createElement("record")
-            entry.setAttribute("name", record.name)
+            entry.setAttribute("name", record.fullName)
             entry.setAttribute("rank", record.rank)
             entry.setAttribute("sport", record.sport)
             entry.setAttribute("position", record.position)
