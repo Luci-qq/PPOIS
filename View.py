@@ -21,7 +21,7 @@ class MainScreen(Screen):
         super().__init__(**kw)
         self.name = "MainWindow"
         self.addition_dialog=None
-        self.addition_dialog = None
+        self.load_dialog = None
         self.btn_layout = BoxLayout(orientation='horizontal', size_hint =(1,0.1))
         self.search_layout = BoxLayout(orientation='horizontal', size_hint =(1,0.1))
         self.controller=_controller
@@ -29,7 +29,7 @@ class MainScreen(Screen):
         self.main_layout = BoxLayout(orientation = 'vertical')
         self.checked_rows=[]
         self.create_buttons()
-        self.create_search_utils()
+        self.create_search_main()
         self.create_table()
         self.fill_table(self.records_table)
         self.add_widget(self.main_layout)
@@ -48,7 +48,32 @@ class MainScreen(Screen):
         self.controller.save()  
     
     def btn_load_press(self,instance):
-        print("Load pressed")
+        self.show_load_dialog()
+    
+    def show_load_dialog(self):
+        self.load_dialog = None
+        if not self.load_dialog: 
+            self.load_dialog= MDDialog(
+                    text = "Load records",
+                    type = "custom",
+                    content_cls = LoadDialogContent(),
+                    buttons = [
+                        MDFlatButton(text = "Cancel", on_press = self.dialog_addition_cancel),
+                        MDFlatButton(text = "Continue", on_press=self.dialog_load_ok),
+                    ],
+                    size_hint=(1.0, 1.0),
+                )
+            self.load_dialog.open()
+
+    def dialog_load_cancel(self,*args):
+         self.load_dialog.dismiss()
+    
+    def dialog_load_ok(self,*args):
+         path = self.load_dialog.content_cls.txtf_path.text
+         self.controller.change_model(path)
+         self.filter_records()
+         self.create_search_utils()
+         self.load_dialog.dismiss()
 
     def btn_add_press(self, instance):
         self.show_addition_dialog()
@@ -100,16 +125,8 @@ class MainScreen(Screen):
     def btn_search_press(self,instance):
         self.filter_records()
         return
-               
-    def create_search_utils(self):
-        ##Search utils
-        self.txtf_search_by_name = MDTextField(hint_text = "Search by name:", size_hint = (0.2,1.0))
-        filter_label=MDLabel(text ='Filters:',size_hint = (0.2,1.0))
-        self.dropdown_rank_filter = MDDropDownItem(size_hint = (0.2,1.0))
-        self.dropdown_sport_filter = MDDropDownItem(size_hint = (0.2,1.0))
-        self.dropdown_titles_value_filter = MDDropDownItem(size_hint= (0.2,1.0))
-        ##Dropdowns
 
+    def create_search_utils(self):
         ##Ranks
         ranks=self.controller.get_ranks()
         ranks.add('All')
@@ -124,7 +141,6 @@ class MainScreen(Screen):
             )
         self.dropdown_rank_filter.set_item("by rank")
         self.dropdown_rank_filter.bind(on_press=lambda x: self.ranks_drop_down_line_up.open())
-
         ##Sports
         sports = self.controller.get_sports()
         sports.add('All')
@@ -155,6 +171,14 @@ class MainScreen(Screen):
         self.dropdown_titles_value_filter.set_item('by titles value')
         self.dropdown_titles_value_filter.bind(on_press=lambda x: self.title_value_drop_down_line_up.open())
 
+    def create_search_main(self):
+        ##Search utils
+        self.txtf_search_by_name = MDTextField(hint_text = "Search by name:", size_hint = (0.2,1.0))
+        filter_label=MDLabel(text ='Filters:',size_hint = (0.2,1.0))
+        self.dropdown_rank_filter = MDDropDownItem(size_hint = (0.2,1.0))
+        self.dropdown_sport_filter = MDDropDownItem(size_hint = (0.2,1.0))
+        self.dropdown_titles_value_filter = MDDropDownItem(size_hint= (0.2,1.0))
+        self.create_search_utils()
         self.search_layout.add_widget(self.txtf_search_by_name)
         self.search_layout.add_widget(filter_label)
         self.search_layout.add_widget(self.dropdown_rank_filter)
@@ -214,7 +238,18 @@ class MainScreen(Screen):
         self.tblLayout.add_widget(self.table)
         self.main_layout.add_widget(self.tblLayout)
 
+class LoadDialogContent(MDStackLayout):
+    txtf_path = ObjectProperty(None)
 
+    def __init__(self, **kwargs):
+        super().__init__(**kwargs)
+        self.height="100dp"
+        self.width="100dp"
+        self.txtf_path = MDTextField(
+             hint_text = "Enter file path:",
+             required = True
+        )
+        self.add_widget(self.txtf_path)
 
 class AdditionDialogContent(MDStackLayout):
     txtf_fullName = ObjectProperty(None)
@@ -244,7 +279,7 @@ class AdditionDialogContent(MDStackLayout):
             required=True,
         )
         self.txtf_position=MDTextField(
-            hint_text="Enter rank",
+            hint_text="Enter position",
             required=True,
         )
         self.txtf_squad=MDTextField(
@@ -263,9 +298,9 @@ class AdditionDialogContent(MDStackLayout):
 
 
 class MainApp(MDApp):
-    def __init__(self, contoroller, **kwargs):
+    def __init__(self, controller, **kwargs):
         super().__init__(**kwargs)
-        self.controller_main = contoroller
+        self.controller_main = controller
 
     def build(self):
         return MainScreen(self.controller_main)

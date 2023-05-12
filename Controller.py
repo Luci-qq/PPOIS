@@ -3,7 +3,9 @@ from Model import Record
 class Controller:
     def __init__(self,path):
         self.model=XmlRecordRepository(path)
-        self.search_list = []
+
+    def change_model(self,path):
+        self.model=XmlRecordRepository(path)
 
     def make_record(self,name,rank,sport,position,squad,titles):
         new_rec = Record(name,rank,sport,position,squad,titles)
